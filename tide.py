@@ -3,11 +3,30 @@ import argparse
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 class TideHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
+
+    def _dispatch(self, handler_map, path, default_handler):
+        for re_path, handler in handler_map:
+            if re_path.match(path):
+                handler(self, path)
+                break
+        else:
+            default_handler(path)
+
+    def _response(self, content):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(b"Hello")
+        self.wfile.write(content.encode())
+
+    def _get_top_page(self, path):
+        with open('ui/main.html', 'rb') as file:
+            self._response(file.read())
+
+    def do_GET(self):
+        self._dispatch(self._handlers_get, self.path, self._get_top_page)
+
+    _handlers_get = [
+    ]
 
 
 def run(args):
