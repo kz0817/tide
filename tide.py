@@ -13,6 +13,18 @@ def is_file(path):
     return file_path.exists() and file_path.is_file()
 
 
+EXT_MIME_MAP = {
+    'html': 'text/html',
+    'css': 'text/css',
+    'js': 'text/javascript',
+    'json': 'application/json',
+}
+
+def guess_media_type(path):
+    ext = path.split('.')[-1]
+    return EXT_MIME_MAP.get(ext)
+
+
 class TideHandler(BaseHTTPRequestHandler):
 
     args = None
@@ -25,9 +37,11 @@ class TideHandler(BaseHTTPRequestHandler):
         else:
             default_handler(path)
 
-    def _response(self, content):
+    def _response(self, content, content_type=None):
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        if content_type is None:
+            content_type = 'text/plain'
+        self.send_header('Content-type', content_type)
         self.end_headers()
         self.wfile.write(content.encode())
 
@@ -47,7 +61,7 @@ class TideHandler(BaseHTTPRequestHandler):
             return
 
         with open(local_path, 'r') as file:
-            self._response(file.read())
+            self._response(file.read(), guess_media_type(local_path))
 
     def _get_api_filelist(self, path):
         parsed_path = urlparse(path)
@@ -69,7 +83,7 @@ class TideHandler(BaseHTTPRequestHandler):
                 'modifiedTime': item.stat().st_mtime,
             })
 
-        self._response(json.dumps(body))
+        self._response(json.dumps(body), 'applicationi/json')
 
     def do_GET(self):
         self._dispatch(self._handlers_get, self.path, self._get_web_files)
