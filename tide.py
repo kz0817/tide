@@ -7,6 +7,12 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
+def is_file(path):
+    print(path)
+    file_path = Path(path)
+    return file_path.exists() and file_path.is_file()
+
+
 class TideHandler(BaseHTTPRequestHandler):
 
     args = None
@@ -25,8 +31,22 @@ class TideHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content.encode())
 
-    def _get_top_page(self, path):
-        with open('ui/main.html', 'rb') as file:
+    def _get_web_files(self, path):
+        if path == '/':
+            self.send_response(301)
+            self.send_header('Location', 'ui/main.html')
+            self.end_headers()
+            return
+
+        # TODO: validate param_dir if it contains either '..'
+
+        local_path = './' + path
+        if not is_file(local_path):
+            self.send_response(404)
+            self.end_headers()
+            return
+
+        with open(local_path, 'r') as file:
             self._response(file.read())
 
     def _get_api_filelist(self, path):
@@ -52,7 +72,7 @@ class TideHandler(BaseHTTPRequestHandler):
         self._response(json.dumps(body))
 
     def do_GET(self):
-        self._dispatch(self._handlers_get, self.path, self._get_top_page)
+        self._dispatch(self._handlers_get, self.path, self._get_web_files)
 
     _handlers_get = [
         (re.compile(r'/api/filelist'), _get_api_filelist)
