@@ -45,6 +45,30 @@ const removeAllChildren = (elem: HTMLElement): void => {
   }
 }
 
+const setupLocation = (location: string): void => {
+  const parent: HTMLElement = document.getElementById('location') as HTMLElement;
+  removeAllChildren(parent);
+
+  const dirArr: string[] = ['/'].concat(location.split('/').filter(s => s !== ''));
+  let dir: string = '';
+  dirArr.forEach((dirName: string) => {
+
+    const buttonElem: HTMLButtonElement = document.createElement('button');
+    buttonElem.textContent = dirName;
+
+    dir = (dirName == '/') ? '/' : `${dir}/${dirName}`;
+    buttonElem.setAttribute('data-location', dir);
+
+    buttonElem.addEventListener('click', (event: MouseEvent) => {
+      const targetElem = event.target as HTMLElement;
+      const targetDir: string = targetElem.getAttribute('data-location')!;
+      showFileList(targetDir);
+    });
+
+    parent.appendChild(buttonElem);
+  });
+}
+
 const showFileList = async (dir: string): Promise<void> => {
   const url = `/api/filelist?location=${dir}`;
   const response = await fetch(url);
@@ -55,7 +79,7 @@ const showFileList = async (dir: string): Promise<void> => {
   const fileList: FileList = await response.json();
   console.log(fileList);
 
-  document.getElementById('location')!.textContent = fileList.location;
+  setupLocation(fileList.location);
 
   const entriesElem: HTMLUListElement = document.getElementById('entries') as HTMLUListElement;
   removeAllChildren(entriesElem);
