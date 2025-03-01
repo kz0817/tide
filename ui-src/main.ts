@@ -19,7 +19,8 @@ const createDirItemElement = (entry: DirEntry, currDir: string): HTMLElement => 
   elem.textContent = entry.name;
   elem.href = '#';
   elem.addEventListener('click', (event: MouseEvent) => {
-      showFileList(`${currDir}/${entry.name}`);
+      const parentDir: string = (currDir == '/') ? '' : currDir;
+      showFileList(`${parentDir}/${entry.name}`);
   });
   return elem;
 }
