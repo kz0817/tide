@@ -18,6 +18,9 @@ EXT_MIME_MAP = {
     'css': 'text/css',
     'js': 'text/javascript',
     'json': 'application/json',
+    'png': 'image/png',
+    'jpeg': 'image/jpeg',
+    'jpg': 'image/jpeg',
 }
 
 def guess_media_type(path):
