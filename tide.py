@@ -4,7 +4,7 @@ import json
 import mimetypes
 import os
 import re
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
@@ -121,7 +121,7 @@ class TideHandler(BaseHTTPRequestHandler):
 def run(args):
     server_address = ('', args.port)
     TideHandler.args = args
-    httpd = HTTPServer(server_address, TideHandler)
+    httpd = ThreadingHTTPServer(server_address, TideHandler)
     print(f'Starting httpd server on port {args.port}...')
     httpd.serve_forever()
 
