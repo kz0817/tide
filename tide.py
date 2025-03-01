@@ -118,7 +118,7 @@ class TideHandler(BaseHTTPRequestHandler):
 
 
     def _get_file(self, path):
-        location = get_query_parameter(path, 'location')
+        location = re.sub(r'^/file', '', path)
         if location is None:
             self._response_error(400)
             return
@@ -131,7 +131,7 @@ class TideHandler(BaseHTTPRequestHandler):
 
     _handlers_get = [
         (re.compile(r'/api/filelist'), _get_api_filelist),
-        (re.compile(r'/api/file'), _get_file)
+        (re.compile(r'/file'), _get_file)
     ]
 
 
