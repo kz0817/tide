@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import mimetypes
 import os
 import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -13,19 +14,9 @@ def is_file(path):
     return file_path.exists() and file_path.is_file()
 
 
-EXT_MIME_MAP = {
-    'html': 'text/html',
-    'css': 'text/css',
-    'js': 'text/javascript',
-    'json': 'application/json',
-    'png': 'image/png',
-    'jpeg': 'image/jpeg',
-    'jpg': 'image/jpeg',
-}
-
 def guess_media_type(path):
-    ext = path.split('.')[-1]
-    return EXT_MIME_MAP.get(ext)
+    mime_type, _ = mimetypes.guess_type(path)
+    return mime_type
 
 
 def get_query_parameter(path, param_name, default=None):
