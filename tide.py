@@ -76,17 +76,9 @@ class TideHandler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
-        # TODO: Use response_file
-        # TODO: validate param_dir if it contains either '..'
-
         local_path = './' + path
-        if not is_file(local_path):
-            self.send_response(404)
-            self.end_headers()
-            return
-
-        with open(local_path, 'r') as file:
-            self._response(file.read(), guess_media_type(local_path))
+        # TODO: validate param_dir if it contains either '..'
+        self._response_file(local_path, 'r')
 
     def _get_api_filelist(self, path):
         location = get_query_parameter(path, 'location')
