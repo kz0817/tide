@@ -14,7 +14,11 @@ interface FileList {
   entries: DirEntry[];
 }
 
-const createDirItemElement = (entry: DirEntry, currDir: string): HTMLElement => {
+const createDirItemElement = (entry: DirEntry, currDir: string, outerElem: HTMLElement): void => {
+  const iconElem: HTMLSpanElement = document.createElement('span');
+  iconElem.textContent = '📁';
+  outerElem.appendChild(iconElem);
+
   const elem: HTMLAnchorElement = document.createElement('a');
   elem.textContent = entry.name;
   elem.href = '#';
@@ -22,21 +26,22 @@ const createDirItemElement = (entry: DirEntry, currDir: string): HTMLElement => 
       const parentDir: string = (currDir == '/') ? '' : currDir;
       showFileList(`${parentDir}/${entry.name}`);
   });
-  return elem;
+  outerElem.appendChild(elem);
 }
 
-const createFileItemElement = (entry: DirEntry, currDir: string): HTMLElement => {
+const createFileItemElement = (entry: DirEntry, currDir: string, outerElem: HTMLElement): void => {
   const elem: HTMLAnchorElement = document.createElement('a');
   elem.textContent = entry.name;
   const parentDir: string = (currDir == '/') ? '' : currDir;
   elem.href = `/file${parentDir}/${entry.name}`;
-  return elem;
+  outerElem.appendChild(elem);
 }
 
 const createEntryElement = (entry: DirEntry, currDir: string): HTMLElement => {
-  return entry.isDir
-         ? createDirItemElement(entry, currDir)
-         : createFileItemElement(entry, currDir);
+  const outerElem: HTMLSpanElement = document.createElement('span');
+  entry.isDir ? createDirItemElement(entry, currDir, outerElem)
+              : createFileItemElement(entry, currDir, outerElem);
+  return outerElem;
 }
 
 const removeAllChildren = (elem: HTMLElement): void => {
