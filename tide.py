@@ -25,6 +25,12 @@ def guess_media_type(path):
     return EXT_MIME_MAP.get(ext)
 
 
+def get_query_parameter(path, param_name, default=None):
+    parsed_path = urlparse(path)
+    query_params = parse_qs(parsed_path.query)
+    return query_params.get(param_name, default)[0]
+
+
 class TideHandler(BaseHTTPRequestHandler):
 
     args = None
@@ -43,7 +49,27 @@ class TideHandler(BaseHTTPRequestHandler):
             content_type = 'text/plain'
         self.send_header('Content-type', content_type)
         self.end_headers()
-        self.wfile.write(content.encode())
+
+        if isinstance(content, str):
+            content = content.encode()
+        self.wfile.write(content)
+
+    def _response_error(self, code):
+        self.send_response(code)
+        self.end_headers()
+
+    def _response_file(self, local_path, mode='rb', default_mime='application/octet-stream'):
+        if not is_file(local_path):
+            self._response_error(404)
+            self.end_headers()
+            return
+
+        mimetype = guess_media_type(local_path)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        with open(local_path, mode) as file:
+            self._response(file.read(), mimetype)
 
     def _get_web_files(self, path):
         if path == '/':
@@ -52,6 +78,7 @@ class TideHandler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
+        # TODO: Use response_file
         # TODO: validate param_dir if it contains either '..'
 
         local_path = './' + path
@@ -64,6 +91,7 @@ class TideHandler(BaseHTTPRequestHandler):
             self._response(file.read(), guess_media_type(local_path))
 
     def _get_api_filelist(self, path):
+        # TODO: use get query parameter
         parsed_path = urlparse(path)
         query_params = parse_qs(parsed_path.query)
         location = query_params.get('location', '/')[0]
@@ -85,11 +113,22 @@ class TideHandler(BaseHTTPRequestHandler):
 
         self._response(json.dumps(body), 'applicationi/json')
 
+
+    def _get_file(self, path):
+        location = get_query_parameter(path, 'location')
+        if location is None:
+            self._response_error(400)
+            return
+
+        local_path = os.path.join(self.args.root_dir, location.lstrip('/'))
+        self._response_file(local_path)
+
     def do_GET(self):
         self._dispatch(self._handlers_get, self.path, self._get_web_files)
 
     _handlers_get = [
-        (re.compile(r'/api/filelist'), _get_api_filelist)
+        (re.compile(r'/api/filelist'), _get_api_filelist),
+        (re.compile(r'/api/file'), _get_file)
     ]
 
 

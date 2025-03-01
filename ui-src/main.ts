@@ -14,18 +14,28 @@ interface FileList {
   entries: DirEntry[];
 }
 
-const createEntryElement = (entry: DirEntry, currDir: string): HTMLElement => {
+const createDirItemElement = (entry: DirEntry, currDir: string): HTMLElement => {
   const elem: HTMLAnchorElement = document.createElement('a');
   elem.textContent = entry.name;
-  elem.href = entry.isDir
-              ? '#'
-              : `/file/${currDir}/${entry.name}`
-  if (entry.isDir) {
-    elem.addEventListener('click', (event: MouseEvent) => {
+  elem.href = '#';
+  elem.addEventListener('click', (event: MouseEvent) => {
       showFileList(`${currDir}/${entry.name}`);
-    });
-  }
+  });
   return elem;
+}
+
+const createFileItemElement = (entry: DirEntry, currDir: string): HTMLElement => {
+  const elem: HTMLAnchorElement = document.createElement('a');
+  elem.textContent = entry.name;
+  elem.href = `/api/file?location=${currDir}/${entry.name}`;
+  elem.download=entry.name;
+  return elem;
+}
+
+const createEntryElement = (entry: DirEntry, currDir: string): HTMLElement => {
+  return entry.isDir
+         ? createDirItemElement(entry, currDir)
+         : createFileItemElement(entry, currDir);
 }
 
 const removeAllChildren = (elem: HTMLElement): void => {
