@@ -34,6 +34,10 @@ def get_query_parameter(path, param_name, default=None):
     return query_params.get(param_name, default)[0]
 
 
+def get_content_path(base_path, location):
+    # TODO: validate location if it contains either '..'
+    return os.path.join(base_path, location.lstrip('/'))
+
 class TideHandler(BaseHTTPRequestHandler):
 
     args = None
@@ -94,12 +98,8 @@ class TideHandler(BaseHTTPRequestHandler):
             self._response(file.read(), guess_media_type(local_path))
 
     def _get_api_filelist(self, path):
-        # TODO: use get query parameter
-        parsed_path = urlparse(path)
-        query_params = parse_qs(parsed_path.query)
-        location = query_params.get('location', '/')[0]
-        # TODO: validate param_dir if it contains either '..'
-        local_dir = os.path.join(self.args.root_dir, location.lstrip('/'))
+        location = get_query_parameter(path, 'location')
+        local_dir = get_content_path(self.args.root_dir, location)
 
         entries = []
         body = {'location': location, 'entries': entries}
@@ -123,7 +123,7 @@ class TideHandler(BaseHTTPRequestHandler):
             self._response_error(400)
             return
 
-        local_path = os.path.join(self.args.root_dir, location.lstrip('/'))
+        local_path = get_content_path(self.args.root_dir, location)
         self._response_file(local_path)
 
     def do_GET(self):
