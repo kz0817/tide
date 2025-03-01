@@ -28,8 +28,8 @@ const createDirItemElement = (entry: DirEntry, currDir: string): HTMLElement => 
 const createFileItemElement = (entry: DirEntry, currDir: string): HTMLElement => {
   const elem: HTMLAnchorElement = document.createElement('a');
   elem.textContent = entry.name;
-  elem.href = `/api/file?location=${currDir}/${entry.name}`;
-  elem.download=entry.name;
+  const parentDir: string = (currDir == '/') ? '' : currDir;
+  elem.href = `/file${parentDir}/${entry.name}`;
   return elem;
 }
 
