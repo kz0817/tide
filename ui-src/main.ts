@@ -1,5 +1,8 @@
+import * as upload from './upload.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     showFileList('/');
+    upload.setup();
 });
 
 interface DirEntry {

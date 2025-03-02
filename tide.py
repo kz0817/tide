@@ -33,13 +33,16 @@ class TideHandler(BaseHTTPRequestHandler):
 
     args = None
 
-    def _dispatch(self, handler_map, path, default_handler):
+    def _dispatch(self, handler_map, path, default_handler=None):
         for re_path, handler in handler_map:
             if re_path.match(path):
                 handler(self, path)
                 break
         else:
-            default_handler(path)
+            if default_handler is not None:
+                default_handler(path)
+            else:
+                self._response_error(404)
 
     def _response(self, content, content_type=None):
         self.send_response(200)
@@ -109,12 +112,49 @@ class TideHandler(BaseHTTPRequestHandler):
         local_path = get_content_path(self.args.root_dir, location)
         self._response_file(local_path)
 
+    def _save_file(self, filename, content_length):
+        CHUNK_SIZE = 8192
+        with open(filename, 'wb') as output_file:
+            bytes_received = 0
+            while bytes_received < content_length:
+                chunk = self.rfile.read(min(CHUNK_SIZE, content_length - bytes_received))
+                if not chunk:
+                    break
+                output_file.write(chunk)
+                bytes_received += len(chunk)
+
+        # TODO: check received length
+        # TODO: save temporary name and rename
+
+
+    def _post_file(self, path):
+        content_length = int(self.headers['Content-Length'])
+
+        filename = self.headers.get('X-File-Name')
+        if filename is None:
+            print('Missing parameter: X-File-Name')
+            self._response_error(400)
+            return
+
+        # TODO: check existence
+        self._save_file(filename, content_length)
+
+        self.send_response(200)
+        self.end_headers()
+
     def do_GET(self):
         self._dispatch(self._handlers_get, self.path, self._get_web_files)
+
+    def do_POST(self):
+        self._dispatch(self._handlers_post, self.path)
 
     _handlers_get = [
         (re.compile(r'/api/filelist'), _get_api_filelist),
         (re.compile(r'/file'), _get_file)
+    ]
+
+    _handlers_post = [
+        (re.compile(r'/api/upload'), _post_file),
     ]
 
 
