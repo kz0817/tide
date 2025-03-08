@@ -21,6 +21,7 @@ const uploadFileWithProgress = (file: File, ctx: Context): void => {
         if (event.lengthComputable) {
             const percentComplete = (event.loaded / event.total) * 100;
             progressBar.value = percentComplete;
+            message.textContent = `uploading: ${percentComplete.toFixed(3)} % (${event.loaded} / ${event.total})`;
         }
     });
 
