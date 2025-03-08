@@ -1,8 +1,16 @@
+import { Context } from './context.js';
 import * as upload from './upload.js';
+
+const ctx: Context = {
+  presentDir: "",
+  updateList() {
+    showFileList(this.presentDir);
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     showFileList('/');
-    upload.setup();
+    upload.setup(ctx);
 });
 
 interface DirEntry {
@@ -99,4 +107,6 @@ const showFileList = async (dir: string): Promise<void> => {
     return liElem;
   })
   .forEach((liElem: HTMLLIElement) => entriesElem.appendChild(liElem));
+
+  ctx.presentDir = dir;
 }

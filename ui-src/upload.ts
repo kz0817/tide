@@ -1,14 +1,16 @@
-export const setup = (): void => {
+import { Context } from './context.js';
+
+export const setup = (ctx: Context): void => {
   document.getElementById('uploadChooser')?.addEventListener('change', (event) => {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file: File = input.files[0];
-      uploadFileWithProgress(file);
+      uploadFileWithProgress(file, ctx);
     }
   });
 }
 
-const uploadFileWithProgress = (file: File): void => {
+const uploadFileWithProgress = (file: File, ctx: Context): void => {
     const xhr = new XMLHttpRequest();
     const progressBar = document.getElementById('uploadProgressBar') as HTMLProgressElement;
     const message = document.getElementById('uploadMessage') as HTMLSpanElement;
@@ -30,6 +32,7 @@ const uploadFileWithProgress = (file: File): void => {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status >= 200 && xhr.status < 300) {
                 message.textContent = 'Completed';
+                ctx.updateList();
             } else if (xhr.status == 409) {
                 message.textContent = 'Erorr: File already exists';
             } else {
