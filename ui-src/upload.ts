@@ -11,6 +11,9 @@ export const setup = (): void => {
 const uploadFileWithProgress = (file: File): void => {
     const xhr = new XMLHttpRequest();
     const progressBar = document.getElementById('uploadProgressBar') as HTMLProgressElement;
+    const message = document.getElementById('uploadMessage') as HTMLSpanElement;
+    progressBar.value = 0;
+    message.textContent = 'uploading';
 
     xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
@@ -23,12 +26,15 @@ const uploadFileWithProgress = (file: File): void => {
     xhr.setRequestHeader('Content-Type', 'application/octet-stream');
     xhr.setRequestHeader('X-File-Name', file.name);
 
-    xhr.onreadystatechange = () => {
+    xhr.onreadystatechange = (): void => {
         if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                console.log('File uploaded successfully:', xhr.responseText);
+            if (xhr.status >= 200 && xhr.status < 300) {
+                message.textContent = 'Completed';
+            } else if (xhr.status == 409) {
+                message.textContent = 'Erorr: File already exists';
             } else {
-                console.error('Error uploading file:', xhr.statusText);
+                console.log(xhr);
+                message.textContent = `Error: ${xhr.statusText}`;
             }
         }
     };
