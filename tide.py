@@ -119,9 +119,13 @@ class TideHandler(BaseHTTPRequestHandler):
                 output_file.write(chunk)
                 bytes_received += len(chunk)
 
-        # TODO: check received length
-        # TODO: save temporary name and rename
+        if bytes_received != content_length:
+            print(f'Error: expected: {content_length}, actual: {bytes_received}')
+            self.send_error(400, 'Invalid content length')
+            os.remove(filename)
+            return False
 
+        return True
 
     def _post_file(self, path):
         content_length = int(self.headers['Content-Length'])
@@ -133,7 +137,9 @@ class TideHandler(BaseHTTPRequestHandler):
             return
 
         try:
-            self._save_file(filename, content_length)
+            succeeded = self._save_file(filename, content_length)
+            if not succeeded:
+                return
         except FileExistsError:
             print(f'Error: {filename}: already exists.')
             self.send_error(409)
