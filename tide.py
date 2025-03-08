@@ -42,7 +42,7 @@ class TideHandler(BaseHTTPRequestHandler):
             if default_handler is not None:
                 default_handler(path)
             else:
-                self._response_error(404)
+                self.send_error(404)
 
     def _response(self, content, content_type=None):
         self.send_response(200)
@@ -55,13 +55,9 @@ class TideHandler(BaseHTTPRequestHandler):
             content = content.encode()
         self.wfile.write(content)
 
-    def _response_error(self, code):
-        self.send_response(code)
-        self.end_headers()
-
     def _response_file(self, local_path, mode='rb', default_mime='application/octet-stream'):
         if not is_file(local_path):
-            self._response_error(404)
+            self.send_error(404)
             self.end_headers()
             return
 
@@ -106,7 +102,7 @@ class TideHandler(BaseHTTPRequestHandler):
     def _get_file(self, path):
         location = re.sub(r'^/file', '', path)
         if location is None:
-            self._response_error(400)
+            self.send_error(400)
             return
 
         local_path = get_content_path(self.args.root_dir, location)
@@ -133,14 +129,14 @@ class TideHandler(BaseHTTPRequestHandler):
         filename = self.headers.get('X-File-Name')
         if filename is None:
             print('Missing parameter: X-File-Name')
-            self._response_error(400)
+            self.send_error(400)
             return
 
         try:
             self._save_file(filename, content_length)
         except FileExistsError:
             print(f'Error: {filename}: already exists.')
-            self._response_error(409)
+            self.send_error(409)
             return
 
         self.send_response(200)
