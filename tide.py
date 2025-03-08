@@ -127,17 +127,30 @@ class TideHandler(BaseHTTPRequestHandler):
 
         return True
 
+    def _create_dir(self, dir_name):
+        dir_path = get_content_path(self.args.root_dir, dir_name)
+        os.makedirs(dir_path, exist_ok=True)
+        return dir_path
+
     def _post_file(self, path):
         content_length = int(self.headers['Content-Length'])
 
+        # setup filename
         filename = self.headers.get('X-File-Name')
         if filename is None:
             print('Missing parameter: X-File-Name')
             self.send_error(400)
             return
 
+        # setup directory
+        dir_name = self.headers.get('X-File-Dir')
+        dir_path = self.args.root_dir
+        if dir_name is not None:
+            dir_path = self._create_dir(dir_name)
+        file_path = get_content_path(dir_path, filename)
+
         try:
-            succeeded = self._save_file(filename, content_length)
+            succeeded = self._save_file(file_path, content_length)
             if not succeeded:
                 return
         except FileExistsError:
