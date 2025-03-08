@@ -114,7 +114,7 @@ class TideHandler(BaseHTTPRequestHandler):
 
     def _save_file(self, filename, content_length):
         CHUNK_SIZE = 8192
-        with open(filename, 'wb') as output_file:
+        with open(filename, 'bx') as output_file:
             bytes_received = 0
             while bytes_received < content_length:
                 chunk = self.rfile.read(min(CHUNK_SIZE, content_length - bytes_received))
@@ -136,8 +136,12 @@ class TideHandler(BaseHTTPRequestHandler):
             self._response_error(400)
             return
 
-        # TODO: check existence
-        self._save_file(filename, content_length)
+        try:
+            self._save_file(filename, content_length)
+        except FileExistsError:
+            print(f'Error: {filename}: already exists.')
+            self._response_error(409)
+            return
 
         self.send_response(200)
         self.end_headers()
