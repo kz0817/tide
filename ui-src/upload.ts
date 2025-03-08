@@ -32,13 +32,13 @@ const uploadFileWithProgress = (file: File, ctx: Context): void => {
     xhr.onreadystatechange = (): void => {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status >= 200 && xhr.status < 300) {
-                message.textContent = 'Completed';
+                message.textContent = '🟢 Completed';
                 ctx.updateList();
             } else if (xhr.status == 409) {
-                message.textContent = 'Erorr: File already exists';
+                message.textContent = '🔴 [Erorr] File already exists';
             } else {
                 console.log(xhr);
-                message.textContent = `Error: ${xhr.statusText}`;
+                message.textContent = `🔴 [Error] ${xhr.statusText}`;
             }
         }
     };
