@@ -32,6 +32,7 @@ def get_content_path(base_path, location):
 class TideHandler(BaseHTTPRequestHandler):
 
     args = None
+    prog_dir = None
 
     def _dispatch(self, handler_map, path, default_handler=None):
         for re_path, handler in handler_map:
@@ -75,8 +76,7 @@ class TideHandler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
-        local_path = './' + path
-        # TODO: validate param_dir if it contains either '..'
+        local_path = get_content_path(self.prog_dir, path);
         self._response_file(local_path, 'r')
 
     def _get_api_filelist(self, path):
@@ -180,6 +180,7 @@ class TideHandler(BaseHTTPRequestHandler):
 def run(args):
     server_address = (args.bind, args.port)
     TideHandler.args = args
+    TideHandler.prog_dir = os.path.dirname(os.path.abspath(__file__))
     httpd = ThreadingHTTPServer(server_address, TideHandler)
     print(f'Starting httpd server on port {args.port}...')
     httpd.serve_forever()
