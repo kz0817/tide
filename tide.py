@@ -89,11 +89,16 @@ class TideHandler(BaseHTTPRequestHandler):
         local_path = Path(local_dir)
         items = local_path.iterdir()
         for item in items:
+            try:
+                item_stat = item.stat()
+            except:
+                continue
+
             entries.append({
                 'name': item.name,
                 'isDir': item.is_dir(),
-                'size':  item.stat().st_size,
-                'modifiedTime': item.stat().st_mtime,
+                'size':  item_stat.st_size,
+                'modifiedTime': item_stat.st_mtime,
             })
 
         self._response(json.dumps(body), 'applicationi/json')
