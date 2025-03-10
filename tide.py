@@ -178,7 +178,7 @@ class TideHandler(BaseHTTPRequestHandler):
 
 
 def run(args):
-    server_address = ('', args.port)
+    server_address = (args.bind, args.port)
     TideHandler.args = args
     httpd = ThreadingHTTPServer(server_address, TideHandler)
     print(f'Starting httpd server on port {args.port}...')
@@ -190,6 +190,7 @@ def main():
 
     parser.add_argument('-p', '--port', default=3423)
     parser.add_argument('-r', '--root-dir', default='')
+    parser.add_argument('-b', '--bind', default='', help='Ex: 127.0.0.1')
 
     args = parser.parse_args()
     run(args)
