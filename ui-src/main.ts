@@ -85,6 +85,12 @@ const setupLocation = (location: string): void => {
   });
 }
 
+const compareDir = (a: DirEntry, b: DirEntry): number => {
+  if (a.isDir == b.isDir)
+    return 0;
+  return a.isDir ? -1 : 1;
+}
+
 const showFileList = async (dir: string): Promise<void> => {
   const url = `/api/filelist?location=${dir}`;
   const response = await fetch(url);
@@ -101,6 +107,10 @@ const showFileList = async (dir: string): Promise<void> => {
   removeAllChildren(entriesElem);
 
   fileList.entries
+  .sort((a: DirEntry, b: DirEntry) => {
+    const compResult = compareDir(a, b);
+    return compResult == 0 ? a.name.localeCompare(b.name) : compResult;
+  })
   .map((entry: DirEntry) => {
     const liElem = document.createElement('li');
     liElem.appendChild(createEntryElement(entry, dir));
