@@ -195,7 +195,7 @@ def main():
     parser = argparse.ArgumentParser(description="This is a sample script.")
 
     parser.add_argument('-p', '--port', default=3423)
-    parser.add_argument('-r', '--root-dir', default='')
+    parser.add_argument('-r', '--root-dir', default=os.getcwd())
     parser.add_argument('-b', '--bind', default='', help='Ex: 127.0.0.1')
 
     args = parser.parse_args()
